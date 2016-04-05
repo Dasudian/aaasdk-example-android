@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DsdAAAExample</string>
+	<string name="phone_number">电话号码</string>
+	<string name="password">密码</string>
+	<string name="login">登录</string>
+	<string name="forget_password">忘记密码</string>
+	<string name="new_user">新用户</string>
+</resources>
