@@ -61,6 +61,9 @@ public class UserInfoActivity extends Activity {
 					Toast.makeText(UserInfoActivity.this, "昵称不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 修改昵称
+				 */
 				String retString = DsdLibAAA.dsdAAAChangeName(name);
 				DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
 			}
@@ -76,6 +79,9 @@ public class UserInfoActivity extends Activity {
 					Toast.makeText(UserInfoActivity.this, "个性签名不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 修改个性签名
+				 */
 				String retString = DsdLibAAA.dsdAAAChangeSignature(signature);
 				DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
 			}
@@ -107,41 +113,44 @@ public class UserInfoActivity extends Activity {
 			}
 
 			protected void onPostExecute(String retString) {
-				try {
-					JSONObject jsonObject = new JSONObject(retString);
-					String result = jsonObject.getString("result");
-					if (result.length() != 0 && result.equals("success")) {
-						JSONObject userInfo = new JSONObject(jsonObject.getString("info"));
-						String name = userInfo.getString("name");
-						nameEditText.setText(name);
-						
-						String signature = userInfo.getString("signature");
-						signatureEditText.setText(signature);
-						
-						String sex = userInfo.getString("sex");
-						if (sex.length() != 0 && sex.equals("male")) {
-							sexTextView.setText("男");
+				if (retString != null) {
+					Log.d("UserInfoActivity", retString);
+					try {
+						JSONObject jsonObject = new JSONObject(retString);
+						String result = jsonObject.getString("result");
+						if (result.length() != 0 && result.equals("success")) {
+							JSONObject userInfo = new JSONObject(jsonObject.getString("info"));
+							String name = userInfo.getString("name");
+							nameEditText.setText(name);
+							
+							String signature = userInfo.getString("signature");
+							signatureEditText.setText(signature);
+							
+							String sex = userInfo.getString("sex");
+							if (sex.length() != 0 && sex.equals("male")) {
+								sexTextView.setText("男");
+							} else {
+								sexTextView.setText("女");
+							}
+							
+							String birthday = userInfo.getString("birthday");
+							birthdayTextView.setText(birthday);
+							
+							String phone_num = userInfo.getString("phone_num");
+							phoneNumberTextView.setText(phone_num);
+							
+							String email = userInfo.getString("email");
+							emailTextView.setText(email);
+							
+							String area = userInfo.getString("area");
+							areaTextView.setText(area);
 						} else {
-							sexTextView.setText("女");
+							Toast.makeText(UserInfoActivity.this, "获取用户信息失败", Toast.LENGTH_SHORT).show();
 						}
-						
-						String birthday = userInfo.getString("birthday");
-						birthdayTextView.setText(birthday);
-						
-						String phone_num = userInfo.getString("phone_num");
-						phoneNumberTextView.setText(phone_num);
-						
-						String email = userInfo.getString("email");
-						emailTextView.setText(email);
-						
-						String area = userInfo.getString("area");
-						areaTextView.setText(area);
-					} else {
-						Toast.makeText(UserInfoActivity.this, "获取用户信息失败", Toast.LENGTH_SHORT).show();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 				
 			}
@@ -162,9 +171,12 @@ public class UserInfoActivity extends Activity {
 				}
 				String newPassword = newPasswordEditText.getText().toString();
 				if (DsdAAAUtils.stringisEmpty(newPassword)) {
-					Toast.makeText(UserInfoActivity.this, "", Toast.LENGTH_SHORT).show();
+					Toast.makeText(UserInfoActivity.this, "新密码不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 修改密码
+				 */
 				String retString = DsdLibAAA.dsdAAAChangePasswd(oldPassword, newPassword);
 				DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
 			}
@@ -190,7 +202,6 @@ public class UserInfoActivity extends Activity {
               /**
                * 上传头像
                */
-              
               String retString = DsdLibAAA.dsdAAASetIcon(picturePath);
               DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
           }

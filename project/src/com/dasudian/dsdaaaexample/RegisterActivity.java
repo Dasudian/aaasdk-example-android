@@ -98,7 +98,9 @@ public class RegisterActivity extends Activity {
 					Toast.makeText(RegisterActivity.this, "个性签名不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
-				
+				/**
+				 * 注册用户信息
+				 */
 				String retString = DsdLibAAA.dsdAAARegister(phoneNumber, verifyCode, name, sexString, 
 						birthday, password, email, area, signature);
 				DsdAAAUtils.checkResult(RegisterActivity.this, retString);

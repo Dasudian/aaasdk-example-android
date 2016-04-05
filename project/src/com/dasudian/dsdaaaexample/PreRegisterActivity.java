@@ -32,6 +32,9 @@ public class PreRegisterActivity extends Activity {
 					Toast.makeText(PreRegisterActivity.this, "电话号码不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 发送手机号，获取验证码
+				 */
 				String retString = DsdLibAAA.dsdAAARegisterPhoneNumber(phoneNumber);
 				DsdAAAUtils.checkResult(PreRegisterActivity.this, retString);
 			}
@@ -52,6 +55,9 @@ public class PreRegisterActivity extends Activity {
 					Toast.makeText(PreRegisterActivity.this, "电话号码不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 通过收到的验证码，验证手机号
+				 */
 				String retString = DsdLibAAA.dsdAAAVerifyPhoneNumber(phoneNumber, verifyCode);
 				if (DsdAAAUtils.checkResult(PreRegisterActivity.this, retString)) {
 					Intent intent = new Intent(PreRegisterActivity.this, RegisterActivity.class);

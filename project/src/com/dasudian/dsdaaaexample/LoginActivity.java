@@ -67,6 +67,9 @@ public class LoginActivity extends Activity {
 					Toast.makeText(LoginActivity.this, "密码不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				/**
+				 * 登录
+				 */
 				String retString = DsdLibAAA.dsdAAALogin(phoneNumber, password);
 				if (DsdAAAUtils.checkResult(LoginActivity.this, retString)) {
 					Intent intent = new Intent(LoginActivity.this, UserInfoActivity.class);
