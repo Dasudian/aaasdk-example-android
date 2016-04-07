@@ -4,10 +4,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.dasudian.AAA.DsdLibAAA;
+import com.dasudian.AAA.DsdLibAAAGetAvatarListener;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -144,6 +146,20 @@ public class UserInfoActivity extends Activity {
 							
 							String area = userInfo.getString("area");
 							areaTextView.setText(area);
+							
+							String UUID = userInfo.getString("avatar");
+							DsdLibAAA.dsdAAAGetAvatar(UUID, new DsdLibAAAGetAvatarListener() {
+								
+								@Override
+								public void onSuccess(Bitmap bitmap) {
+									iconImageView.setImageBitmap(bitmap);
+								}
+								
+								@Override
+								public void onFailed(String arg0) {
+									
+								}
+							});
 						} else {
 							Toast.makeText(UserInfoActivity.this, "获取用户信息失败", Toast.LENGTH_SHORT).show();
 						}
@@ -202,7 +218,7 @@ public class UserInfoActivity extends Activity {
               /**
                * 上传头像
                */
-              String retString = DsdLibAAA.dsdAAASetIcon(picturePath);
+              String retString = DsdLibAAA.dsdAAASetAvatar(picturePath);
               DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
           }
   	}

@@ -90,11 +90,24 @@ public static native String dsdAAARegister(String phoneNumber, String veriCode,
 ```java
 /**
  * 登录。注册成功后，就可以使用注册时得手机号和密码登录了。
+ * 登录成功后，在成功的json字符串里面会返回cookie。
+ * 开发者需要将该cookie保存起来，在下一次登录时，使用api dsdAAAAutoLogin传入保存的cookie即可快速登录，
+ * 不需要再重新提交电话号码和密码来登录。
  * @param phoneNumber  手机号
  * @param password     密码
- * @return json格式字符串，eg：成功{"result":"success"}，失败{"result":"fail","reason":"reason..."}
+ * @return json格式字符串，eg：成功{"result":"success","cookie":"cookie content...."}，
+ * 失败{"result":"fail","reason":"reason..."}
  */
 public static native String dsdAAALogin(String phoneNumber, String password);
+```
+
+```java
+/**
+ * 使用cookie自动登录
+ * @param cookie 登录成功时返回的cookie
+ * @return json格式字符串，eg：成功{"result":"success"}，失败{"result":"fail","reason":"reason..."}
+ */
+public static native String dsdAAAAutoLogin(String cookie);
 ```
 
 ### 获取用户信息
