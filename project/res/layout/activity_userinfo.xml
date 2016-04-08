@@ -178,4 +178,10 @@
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:text="修改密码"/>
+   
+   <Button 
+       android:id="@+id/syn_contacts"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:text="同步联系人"/>
 </LinearLayout>

@@ -59,7 +59,6 @@ public static native String dsdAAARegisterPhoneNumber(String phoneNumber);
  * @return  json格式字符串，eg：成功{"result":"success"}，失败{"result":"fail","reason":"reason..."}	  
  */
 public static native String dsdAAAVerifyPhoneNumber(String phoneNumber, String code);
-
 ```
 
 ### 注册用户信息
@@ -121,7 +120,7 @@ public static native String dsdAAAAutoLogin(String cookie);
  * @return json格式字符串，eg：成功
  * {"result":"success","info":{"name":"dasudian","birthday":"19921015",
  * "sex":"male","phone_num":"13618074451","email":"hr@dasudian.com",
- * "area":"广东省/深圳市/南山区","portrait":"8vcKSfPVD9U1jR5EAq",
+ * "area":"广东省/深圳市/南山区","avatar":"8vcKSfPVD9U1jR5EAq",
  * "signature":"Change the world!"}} 
  * 失败{"result":"fail","reason":"reason..."}            
  */
@@ -135,10 +134,30 @@ public static native String dsdAAAGetUser(String phoneNumber);
 /**
  * 上传头像，该方法是同步方法，可能会阻塞主线程。
  * @param imagePath  图片路径
- * @return json格式字符串，eg：成功{"result":"success","portrait":"8vcKSfPVD9U1jR5EAq"} 
+ * @return json格式字符串，eg：成功{"result":"success","avatar":"8vcKSfPVD9U1jR5EAq"} 
  * 失败{"result":"fail","reason":"reason..."}
  */
 public static native String dsdAAASetIcon(String imagePath);
+```
+
+登录成功后，通过该api获取自己的头像。
+```java
+/**
+ * 获取头像，该方法是一个异步方法。不会阻塞主线程，获取结果在回调函数中返回。
+ * @param avatarUUID 图片的UUID，dsdAAAGetUser成功后会返回avatar字段，
+ * dsdAAASetAvatar上传成功后也会返回avatar字段。
+ * @param callback 获取头像成功和失败的回调接口。
+ */
+public static void dsdAAAGetAvatar(String avatarUUID, final DsdLibAAAGetAvatarListener callback)
+
+//回调接口如下
+public abstract class DsdLibAAAGetAvatarListener {
+	// 获取头像失败的回调
+	public abstract void onFailed(String error);
+	// 获取头像成功的回调
+    public abstract void onSuccess(Bitmap bitmap);
+}
+
 ```
 
 登录成功后，通过该api修改昵称

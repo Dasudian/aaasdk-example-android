@@ -1,5 +1,7 @@
 package com.dasudian.dsdaaaexample;
 
+import javax.security.auth.PrivateCredentialPermission;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class UserInfoActivity extends Activity {
+	private final String TAG = "UserInfoActivity";
 	private String phoneNumber;
 	private EditText nameEditText;
 	private EditText signatureEditText;
@@ -148,16 +151,20 @@ public class UserInfoActivity extends Activity {
 							areaTextView.setText(area);
 							
 							String UUID = userInfo.getString("avatar");
+							/**
+							 * 获取头像
+							 */
 							DsdLibAAA.dsdAAAGetAvatar(UUID, new DsdLibAAAGetAvatarListener() {
 								
 								@Override
 								public void onSuccess(Bitmap bitmap) {
+									Log.d(TAG, "获取头像成功");
 									iconImageView.setImageBitmap(bitmap);
 								}
 								
 								@Override
-								public void onFailed(String arg0) {
-									
+								public void onFailed(String result) {
+									Log.d(TAG, "获取头像失败+" + result);
 								}
 							});
 						} else {
@@ -197,6 +204,20 @@ public class UserInfoActivity extends Activity {
 				DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
 			}
 		});
+		
+		/**
+		 * 同步联系人
+		 */
+		Button synContacts = (Button)findViewById(R.id.syn_contacts);
+		synContacts.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(UserInfoActivity.this, SynContactsActivity.class);
+				intent.putExtra("phoneNumber", phoneNumber);
+				startActivity(intent);
+			}
+		});
     }
     
     
@@ -218,8 +239,15 @@ public class UserInfoActivity extends Activity {
               /**
                * 上传头像
                */
-              String retString = DsdLibAAA.dsdAAASetAvatar(picturePath);
-              DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
-          }
+              AsyncTask<String, Void, String> uploadAvatar = new AsyncTask<String, Void, String>() {
+      			protected String doInBackground(String... paramAnonymousArrayOfString) {
+      				return DsdLibAAA.dsdAAASetAvatar(paramAnonymousArrayOfString[0]);
+      			}
+      			protected void onPostExecute(String retString) {
+      				DsdAAAUtils.checkResult(UserInfoActivity.this, retString);
+      			}
+              };
+              uploadAvatar.execute(picturePath);
+         }
   	}
 }

@@ -43,7 +43,7 @@ public class LoginActivity extends Activity {
 				// joe
 				String appId = "139_A_92ECUvrZ4A6IrP3tz6";
 				String appKey = "0a03d9c67217092b";
-				String aucServer = "https://192.168.1.47:8443/auc_app";
+				String aucServer = "http://192.168.1.47:8443/auc_app";
 				int ret = DsdLibAAA.dsdAAAInit(aucServer, appId, appKey);
 				return ret;
 			}
