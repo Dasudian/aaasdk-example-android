@@ -38,7 +38,8 @@ public class SynContactsActivity extends Activity {
     private static final int PHONES_DISPLAY_NAME_INDEX = 0;  
     private static final int PHONES_NUMBER_INDEX = 1;  
     
-    ArrayList<ContactsInfo> infoList = new ArrayList<ContactsInfo>();
+    ArrayList<ContactsInfo> infoList = new ArrayList<ContactsInfo>();// 用来保存所有联系人
+    ArrayList<ContactsInfo> ContactsToShow = new ArrayList<ContactsInfo>();// 用来保存要显示在listview上的联系人
     private ListAdapter adapter;
     
     private String phoneNumber;
@@ -54,7 +55,7 @@ public class SynContactsActivity extends Activity {
         getPhoneContacts();
         getSIMContacts();
         
-        adapter = new ListAdapter(SynContactsActivity.this, R.layout.list_item, infoList);
+        adapter = new ListAdapter(SynContactsActivity.this, R.layout.list_item, ContactsToShow);
 		ListView listView = (ListView) findViewById(R.id.list_view);
 		listView.setAdapter(adapter);
 		
@@ -68,24 +69,18 @@ public class SynContactsActivity extends Activity {
 				 */
 				AsyncTask<String, Void, String> upload = new AsyncTask<String, Void, String>() {
 	      			protected String doInBackground(String... paramAnonymousArrayOfString) {
-	      				JSONArray jsonArray = new JSONArray();
-	      				
-	      				try {
-	      					for (int i = 0; i < infoList.size(); i++) {
-	      						JSONObject jsonObject = new JSONObject();
-								jsonObject.put("name", infoList.get(i).getName());
-								jsonObject.put("phone", infoList.get(i).getPhoneNumber());
-								jsonArray.put(i, jsonObject);
-	      					}
-						} catch (JSONException e1) {
-							e1.printStackTrace();
+	      				JSONArray jsonArray = new JSONArray();	      				
+	      				for (int i = 0; i < infoList.size(); i++) {
+							jsonArray.put(infoList.get(i).getPhoneNumber()
+									.replace(" ", "")// 去掉所有的空格和'-',否则服务器无法正常解析
+									.replace("-", ""));
 						}
 	      				
 	      				Log.d(TAG, jsonArray.toString());
 	      				return DsdLibAAA.dsdAAASyncContact(jsonArray.toString());
 	      			}
 	      			protected void onPostExecute(String retString) {
-	      				DsdAAAUtils.checkResult(SynContactsActivity.this, retString);
+	      				filterContacts(retString);
 	      			}
 	            };
 	            upload.execute();
@@ -100,10 +95,56 @@ public class SynContactsActivity extends Activity {
 				/**
 				 * 从服务器下载联系人信息
 				 */
-				String retString = DsdLibAAA.dsdAAAGetContact(phoneNumber);
-				DsdAAAUtils.checkResult(SynContactsActivity.this, retString);
+				AsyncTask<String, Void, String> download = new AsyncTask<String, Void, String>() {
+	      			protected String doInBackground(String... paramAnonymousArrayOfString) {
+	      				JSONArray jsonArray = new JSONArray();
+	      				
+	      				for (int i = 0; i < infoList.size(); i++) {
+							jsonArray.put(infoList.get(i).getPhoneNumber());
+						}
+	      				
+	      				Log.d(TAG, jsonArray.toString());
+	      				return DsdLibAAA.dsdAAAGetContact(phoneNumber);
+	      			}
+	      			protected void onPostExecute(String retString) {
+	      				filterContacts(retString);
+	      			}
+	            };
+	            download.execute();
 			}
 		});
+    }
+    
+    /**
+     * 根据服务器返回的结果，从所有联系人列表中过滤出已经注册的联系人，并加入ContactsToShow列表。
+     * @param retString
+     */
+    private void filterContacts(String retString) {
+    	ContactsToShow.removeAll(ContactsToShow);
+		try {
+			JSONObject json = new JSONObject(retString);
+			String resultString = json.getString("result");
+			if (resultString.length() != 0 && resultString.equals("success")) {
+				String contactsString = json.getString("contacts");
+				JSONArray jsonArray = new JSONArray(contactsString);
+				
+				for (int i = 0; i < jsonArray.length(); i++) {
+					String phoneString = jsonArray.get(0).toString();
+					for (int j = 0; j < infoList.size(); j++) {
+						ContactsInfo contact = infoList.get(j);
+						if (contact.getPhoneNumber().equals(phoneString)) {
+							ContactsToShow.add(new ContactsInfo(contact.getName(), 
+									contact.getPhoneNumber()));
+							break;
+						}
+					}
+				}
+				adapter.notifyDataSetChanged();
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     private void getPhoneContacts() {
