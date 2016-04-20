@@ -22,10 +22,9 @@ public class RegisterActivity extends Activity {
 	private RadioGroup sexRadioGroup;
 	private Button birthdayButton;
 	private EditText emailEditText;
-	private Button areaButton;
 	private EditText signatureEditText;
 	private Button registerButton;
-	private String sexString = "male";
+	private int sex = 1;// 1:男，2：女，0：其它
 	private String phoneNumber;
 	private String verifyCode;
 	
@@ -47,13 +46,11 @@ public class RegisterActivity extends Activity {
 	        public void onCheckedChanged(RadioGroup arg0, int arg1) {
 	             int radioButtonId = arg0.getCheckedRadioButtonId();
 	             RadioButton rb = (RadioButton)RegisterActivity.this.findViewById(radioButtonId);
-	             sexString = rb.getText().toString().equals("男") ? "male" : "female";
-	             Log.d(TAG, sexString);
+	             sex = rb.getText().toString().equals("男") ? 1 : 2;
 	         }
 	    });
         birthdayButton = (Button)findViewById(R.id.birthday);
         emailEditText = (EditText)findViewById(R.id.email);
-        areaButton = (Button)findViewById(R.id.area);
         signatureEditText = (EditText)findViewById(R.id.signature);
         registerButton = (Button)findViewById(R.id.register);
         registerButton.setOnClickListener(new OnClickListener() {
@@ -87,26 +84,25 @@ public class RegisterActivity extends Activity {
 					return;
 				}
 				
-				String area = areaButton.getText().toString();
-				if (area.length() == 0) {
-					Toast.makeText(RegisterActivity.this, "地区不能为空", Toast.LENGTH_SHORT).show();
-					return;
-				}
+				String province = "广东";
+				String city = "深圳";
 				
 				String signature = signatureEditText.getText().toString();
 				if (signature.length() == 0) {
 					Toast.makeText(RegisterActivity.this, "个性签名不能为空", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				
+				String device = android.os.Build.MODEL;
+				Log.d(TAG, "device = " + device);
+				
 				/**
 				 * 注册用户信息
 				 */
-				String retString = DsdLibAAA.dsdAAARegister(phoneNumber, verifyCode, name, sexString, 
-						birthday, password, email, area, signature);
+				String retString = DsdLibAAA.dsdAAARegister(phoneNumber, verifyCode, name, sex, 
+						birthday, password, email, province, city, device, signature);
 				DsdAAAUtils.checkResult(RegisterActivity.this, retString);
 			}
-		});
-        
-        
+		});  
     }
 }

@@ -53,24 +53,10 @@ public class LoginActivity extends Activity {
 	private TextView qqAreaTextView;
 	private ImageView qqAvatarImageView;
 	// wechat
-	private final String appIdWechat = "wxd930ea5d5a258f4f";
+	private final String appIdWechat = "wx5b545565f1a8cd7c";
 	private IWXAPI apiIwxapi;
 	
-	// 注册到微信
-	private void regToWx() {
-		apiIwxapi = WXAPIFactory.createWXAPI(this, appIdWechat, true);
-		Boolean ret = apiIwxapi.registerApp(appIdWechat);
-		Log.e(TAG, "微信注册返回值是："+ret);
-	}
-	
-	private void sendOauthReq() {
-	    // send oauth request 
-	    final SendAuth.Req req = new SendAuth.Req();
-	    req.scope = "snsapi_userinfo";
-	    req.state = "wechat_sdk_demo_test";
-	    apiIwxapi.sendReq(req);
-	}
-	
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -213,7 +199,7 @@ public class LoginActivity extends Activity {
 		});
         
         /**
-         * 使用qq登录成功并将qq用户信息发送到大数点服务器后，调用下面的方法从大数点服务器获取用户信息
+         * 用户信息发送到大数点服务器后，调用下面的方法从大数点服务器获取用户信息
          */
         qqNameTextView = (TextView)findViewById(R.id.qq_name);
         qqSexTextView = (TextView)findViewById(R.id.qq_sex);
@@ -225,28 +211,25 @@ public class LoginActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (isLogin) {
-					String retString = DsdLibAAA.dsdAAAOauthUserInfo(mTencent.getOpenId(), 1);
+					String retString = DsdLibAAA.dsdAAAOauthUserInfo(mTencent.getOpenId());
 					if (retString != null && retString.length() != 0) {
 						Log.d(TAG, "获取qq用户信息的结果是："+retString);
 						try {
 							JSONObject jsonObject = new JSONObject(retString);
-							String userInfoString = jsonObject.getString("user_info");
-							if (userInfoString != null && userInfoString.length() != 0) {
-								JSONObject jsonUserInfo = new JSONObject(jsonObject.getString("user_info"));
-								String name = jsonUserInfo.getString("nickname");
-								String sex = jsonUserInfo.getString("sex");
-								String area = jsonUserInfo.getString("province") + "/"
-												+ jsonUserInfo.getString("city");
-								if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(sex) 
-										&& !TextUtils.isEmpty(area)) {
-									qqNameTextView.setText(name);
-									qqSexTextView.setText(sex);
-									qqAreaTextView.setText(area);
-								}
-								
-								String headImgUrl = jsonUserInfo.getString("headimgurl");
-								getAvatar(headImgUrl);
+							String name = jsonObject.getString("name");
+							String sex = jsonObject.getString("sex");
+							String area = jsonObject.getString("province") + "/"
+											+ jsonObject.getString("city");
+							if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(sex) 
+									&& !TextUtils.isEmpty(area)) {
+								qqNameTextView.setText(name);
+								qqSexTextView.setText(sex);
+								qqAreaTextView.setText(area);
 							}
+							
+							String headImgUrl = jsonObject.getString("avatar");
+							getAvatar(headImgUrl);
+							
 						} catch (JSONException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -268,7 +251,7 @@ public class LoginActivity extends Activity {
 			}
 		});
     }
-    
+     
     /**
      * 获取头像
      * @param headImgUrl 
@@ -334,7 +317,7 @@ public class LoginActivity extends Activity {
                 /**
                  * 将信息同步到大数点服务器
                  */
-                String retString = DsdLibAAA.dsdAAAqq(openId, token, appId);
+                String retString = DsdLibAAA.dsdAAAqq(openId, token, appId, "android");
                 DsdAAAUtils.checkResult(this, retString);
             }
         } catch(Exception e) {
@@ -383,4 +366,23 @@ public class LoginActivity extends Activity {
 			Util.dismissDialog();
 		}
 	}
+    
+    
+    /**
+     * ======================已下是微信登录相关==================
+     */
+ 	private void regToWx() {
+ 		apiIwxapi = WXAPIFactory.createWXAPI(this, appIdWechat, true);
+ 		Boolean ret = apiIwxapi.registerApp(appIdWechat);
+ 		Log.e(TAG, "微信注册返回值是："+ret);
+ 	}
+ 	
+ 	private void sendOauthReq() {
+ 	    // send oauth request 
+ 	    final SendAuth.Req req = new SendAuth.Req();
+ 	    req.scope = "snsapi_userinfo";
+ 	    req.state = "wechat_sdk_demo_test1";
+ 	    Boolean ret = apiIwxapi.sendReq(req);
+ 	    Log.e(TAG, "发送消息微信的结果：" +ret);
+ 	}
 }

@@ -132,11 +132,7 @@ public class UserInfoActivity extends Activity {
 							signatureEditText.setText(signature);
 							
 							String sex = userInfo.getString("sex");
-							if (sex.length() != 0 && sex.equals("male")) {
-								sexTextView.setText("男");
-							} else {
-								sexTextView.setText("女");
-							}
+							sexTextView.setText(sex);
 							
 							String birthday = userInfo.getString("birthday");
 							birthdayTextView.setText(birthday);
@@ -147,7 +143,7 @@ public class UserInfoActivity extends Activity {
 							String email = userInfo.getString("email");
 							emailTextView.setText(email);
 							
-							String area = userInfo.getString("area");
+							String area = userInfo.getString("province") + "/" + userInfo.getString("city");
 							areaTextView.setText(area);
 							
 							String UUID = userInfo.getString("avatar");
