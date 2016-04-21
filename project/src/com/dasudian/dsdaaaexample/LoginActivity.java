@@ -53,7 +53,7 @@ public class LoginActivity extends Activity {
 	private TextView qqAreaTextView;
 	private ImageView qqAvatarImageView;
 	// wechat
-	private final String appIdWechat = "wx5b545565f1a8cd7c";
+	private final String appIdWechat = "wx5b545565f1a8cd7c";// 需要区微信开发者网站获取
 	private IWXAPI apiIwxapi;
 	
 
@@ -259,7 +259,7 @@ public class LoginActivity extends Activity {
     private void getAvatar(final String headImgUrl) {
     	AsyncTask<Object, Void, Bitmap> getHeadImg = new AsyncTask<Object, Void, Bitmap>() {
 			protected Bitmap doInBackground(Object... paramAnonymousArrayOfString) {
-				 try {  
+				 try {
 				      URL url = new URL(headImgUrl);  
 				      HttpURLConnection conn = (HttpURLConnection) url.openConnection();  
 				      conn.setDoInput(true);

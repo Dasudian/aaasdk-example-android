@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -13,22 +14,34 @@ import java.security.NoSuchAlgorithmException;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.dasudian.AAA.DsdLibAAA;
+import com.dasudian.dsdaaaexample.DsdAAAUtils;
 import com.dasudian.dsdaaaexample.R;
+import com.dasudian.dsdaaaexample.UserInfo;
 import com.tencent.mm.sdk.modelbase.BaseReq;
 import com.tencent.mm.sdk.modelbase.BaseResp;
 import com.tencent.mm.sdk.modelmsg.SendAuth;
 import com.tencent.mm.sdk.openapi.IWXAPI;
 import com.tencent.mm.sdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.open.utils.Util;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
 	
@@ -38,37 +51,28 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
 	private final String appId = "wx5b545565f1a8cd7c";
 	private final String appSec = "c3926fd708d5213d20ea4017bbd9b67f";
 	private IWXAPI api;
-    
+	private ImageView avatarImageView;
+	private TextView nameTextView;
+	private TextView sexTextView;
+	private TextView areaTextView;
+    	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);  
         setContentView(R.layout.activity_wechat);
         
+        initView();
+        
         api = WXAPIFactory.createWXAPI(this, appId, false);
-        Boolean ret = api.registerApp(appId);
-        Log.e(TAG, "注册结果:" + ret);
-        ret = api.handleIntent(getIntent(), this);
-        Log.e(TAG, "handleIntent结果:" + ret);
-        
-        wechatButton = (Button)findViewById(R.id.wechat);
-        wechatButton.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// send oauth request 
-//		 	    final SendAuth.Req req = new SendAuth.Req();
-//		 	    req.scope = "snsapi_userinfo";
-//		 	    req.state = "wechat_sdk_demo_test1";
-//		 	    Boolean ret = api.sendReq(req);
-		 	    
-		 	    final SendAuth.Req req = new SendAuth.Req();
-				req.scope = "post_timeline";
-				req.state = "none";
-				Boolean ret = api.sendReq(req);
-		 	    Log.e(TAG, "发送消息微信的结果：" +ret);
-			}
-		});
-        
+        api.registerApp(appId);
+        api.handleIntent(getIntent(), this);     
+    }
+    
+    private void initView() {
+    	avatarImageView = (ImageView)findViewById(R.id.wechat_avatar);
+    	nameTextView = (TextView)findViewById(R.id.wechat_name);
+    	sexTextView = (TextView)findViewById(R.id.wechat_sex);
+    	areaTextView = (TextView)findViewById(R.id.wechat_area);
     }
 
 	@Override
@@ -84,9 +88,6 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
 		Log.e(TAG, "onReq");
 	}
 
-	
-	
-	
 	@Override
 	public void onResp(BaseResp resp) {
 		Log.e(TAG, "onResp");
@@ -101,10 +102,11 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
         			+"&grant_type=authorization_code";
         	Log.d(TAG, "httpUrl = " + httpUrl);
         	
-        	AsyncTask<String, Void, String> localMF = new AsyncTask<String, Void, String>() {
-    			protected String doInBackground(
+        	AsyncTask<String, Void, UserInfo> getAccessToken = new AsyncTask<String, Void, UserInfo>() {
+    			protected UserInfo doInBackground(
     					String... paramAnonymousArrayOfString) {
     				String result = new String();
+    				UserInfo userInfo = new UserInfo();
 					try {
 						URL url = new URL(paramAnonymousArrayOfString[0]);
 						HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -129,8 +131,6 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
 			            while ((inputLine = in.readLine()) != null) {
 			                result += inputLine;            
 			            }
-			            
-			            Log.d(TAG, "result = " + result);
 					} catch (MalformedURLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -144,14 +144,83 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					return result;
+					
+					String avatarUrl = new String();
+					if (!Util.isEmpty(result)) {
+		            	try {
+							JSONObject jsonObject = new JSONObject(result);
+							String accessToken = jsonObject.getString("access_token");
+							String openid = jsonObject.getString("openid");
+							String refreshToken = jsonObject.getString("refresh_token");
+							if (accessToken != null && openid != null) {
+								/**
+								 * 1. 将用户信息发送到大数点服务器
+								 */
+								String resultString = DsdLibAAA.dsdAAAwechat(openid, accessToken,
+										appId, android.os.Build.MODEL);
+				            	Log.d(TAG, "dsdAAAwechat 的结果是 = " + resultString);
+				            	
+				            	
+				            	/**
+				            	 * 2.1. 从服务器拉取用户信息
+				            	 */
+				            	resultString = DsdLibAAA.dsdAAAOauthUserInfo(openid);
+				            	Log.d(TAG, "dsdAAAOauthUserInfo 的结果是 = " + resultString);
+				            	
+				            	JSONObject userInfoJsonObject = new JSONObject(resultString);
+				            	avatarUrl = userInfoJsonObject.getString("avatar");
+				            	String name = userInfoJsonObject.getString("name");
+				            	String sex = userInfoJsonObject.getString("sex");
+				            	String province = userInfoJsonObject.getString("province");
+				            	String city = userInfoJsonObject.getString("city");
+				            	userInfo.setName(name);
+				            	userInfo.setSex(sex);
+				            	userInfo.setArea(province + "/" + city);
+							}
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+		            }
+					/**
+					 * 2.2. 获取用户头像
+					 */
+					if (!Util.isEmpty(avatarUrl)) {
+						  URL url;
+						try {
+							url = new URL(avatarUrl);
+							HttpURLConnection conn = (HttpURLConnection) url.openConnection();  
+						      conn.setDoInput(true);
+						      conn.setConnectTimeout(3000);
+						      conn.connect();  
+						      InputStream is = conn.getInputStream();  
+						      Bitmap bitmap = BitmapFactory.decodeStream(is);
+						      userInfo.setAvatar(bitmap);
+						} catch (MalformedURLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}  
+					      
+					}
+
+					return userInfo;
     			}
 
-    			protected void onPostExecute(String result) {
-    				
+    			protected void onPostExecute(UserInfo userInfo) {
+    				if (userInfo != null && userInfo.getName() != null
+    						&& userInfo.getSex() != null && userInfo.getAvatar() != null
+    						&& userInfo.getArea() != null) {
+    					nameTextView.setText(userInfo.getName());
+    					sexTextView.setText(userInfo.getSex());
+    					areaTextView.setText(userInfo.getArea());
+    					avatarImageView.setImageBitmap(userInfo.getAvatar());
+    				}
     			}
     		};
-    		localMF.execute(httpUrl);
+    		getAccessToken.execute(httpUrl);
              
             break;
         case BaseResp.ErrCode.ERR_AUTH_DENIED:
